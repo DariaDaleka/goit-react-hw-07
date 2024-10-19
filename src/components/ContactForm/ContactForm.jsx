@@ -1,75 +1,79 @@
-import { ErrorMessage, Field, Form, Formik } from "formik";
-import * as Yup from "yup";
-import s from "./ContactForm.module.css";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import { useId } from "react";
 import { nanoid } from "nanoid";
-import { useDispatch, useSelector } from "react-redux";
-import { addContact, selectContacts } from "../../redux/contactsSlice";
+import * as Yup from "yup";
+import { useDispatch } from "react-redux";
+import { addContact } from "../../redux/contactsOps";
+import styles from "./ContactForm.module.css";
 
 const ContactForm = () => {
+  const nameId = useId();
+  const phoneId = useId();
   const dispatch = useDispatch();
-  const contacts = useSelector(selectContacts);
 
-  const handleSubmit = (values, { resetForm }) => {
-    const contactExists = contacts.some(
-      (contact) => contact.name.toLowerCase() === values.name.toLowerCase()
+  const handleSubmit = (values, options) => {
+    dispatch(
+      addContact({
+        id: nanoid(),
+        name: values.name,
+        number: values.phone,
+      })
     );
-
-    if (!contactExists) {
-      dispatch(addContact({ id: nanoid(), ...values }));
-      resetForm();
-    } else {
-      alert(`${values.name} is already in contacts`);
-    }
+    options.resetForm();
   };
 
-  const ContactSchema = Yup.object().shape({
+  const orderSchema = Yup.object().shape({
     name: Yup.string()
-      .min(3, "Minimum 3 characters required")
-      .max(50, "Maximum 50 characters allowed")
-      .required("Name is required"),
-    number: Yup.string()
-      .matches(
-        /^[0-9()+\-\s]+$/,
-        "Phone number can contain only numbers and symbols (+, -, (, ), spaces)"
-      )
-      .min(7, "Minimum 7 characters required")
-      .max(15, "Maximum 15 characters allowed")
-      .required("Phone number is required"),
+      .min(3, "Minimum 3 symbols")
+      .max(50, "Maximum 50 symbols")
+      .required("This field is required!"),
+    phone: Yup.string()
+      .min(3, "Minimum 3 symbols")
+      .max(15, "Maximum of 15 numbers")
+      .matches(/^[0-9]*$/, "Only numbers!")
+      .required("This field is required!"),
   });
 
   return (
     <Formik
-      initialValues={{ name: "", number: "" }}
-      validationSchema={ContactSchema}
+      initialValues={{
+        name: "",
+        phone: "",
+      }}
       onSubmit={handleSubmit}
+      validationSchema={orderSchema}
     >
-      {({ isSubmitting }) => (
-        <Form className={s.form}>
-          <label className={s.label}>
-            Name
-            <Field
-              type="text"
-              name="name"
-              className={s.field}
-              placeholder="Enter name..."
-            />
-            <ErrorMessage className={s.error} name="name" component="span" />
+      <Form className={styles.form}>
+        <div className={styles.formGroup}>
+          <label htmlFor={nameId} className={styles.label}>
+            Name:
           </label>
-          <label className={s.label}>
-            Phone Number
-            <Field
-              type="text"
-              name="number"
-              className={s.field}
-              placeholder="Enter phone number..."
-            />
-            <ErrorMessage className={s.error} name="number" component="span" />
+          <Field
+            className={styles.input}
+            id={nameId}
+            name="name"
+            type="text"
+            placeholder="Enter your name"
+          />
+          <ErrorMessage name="name" component="p" className={styles.error} />
+        </div>
+        <div className={styles.formGroup}>
+          <label htmlFor={phoneId} className={styles.label}>
+            Phone:
           </label>
-          <button type="submit" className={s.btn} disabled={isSubmitting}>
-            Add Contact
-          </button>
-        </Form>
-      )}
+          <Field
+            className={styles.input}
+            id={phoneId}
+            name="phone"
+            type="tel"
+            placeholder="Enter your phone number"
+          />
+          <ErrorMessage name="phone" component="p" className={styles.error} />
+        </div>
+        <button className={styles.btn} type="submit">
+          Add contact
+        </button>
+      </Form>
     </Formik>
   );
 };

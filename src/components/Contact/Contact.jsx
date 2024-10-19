@@ -1,30 +1,27 @@
-import { deleteContact } from "../../redux/contactsSlice";
-import s from "./Contact.module.css";
-import { RiPhoneFill } from "react-icons/ri";
-import { IoPerson } from "react-icons/io5";
 import { useDispatch } from "react-redux";
-import { MdDelete } from "react-icons/md";
+import { deleteContact } from "../../redux/contactsOps";
+import { FaUser, FaPhone, FaTrash } from "react-icons/fa";
+import styles from "./Contact.module.css";
 
-const Contact = ({ contact }) => {
+const Contact = ({ id, name, number }) => {
   const dispatch = useDispatch();
 
+  const handleDelete = () => {
+    dispatch(deleteContact(id));
+  };
+
   return (
-    <div className={s.contactCard}>
-      <li className={s.item}>
-        <span className={s.name}>
-          <IoPerson className={s.icon} /> {contact.name}:
-        </span>
-        <span className={s.number}>
-          <RiPhoneFill className={s.icon} /> {contact.number}
-        </span>
-        <button
-          className={s.btn}
-          onClick={() => dispatch(deleteContact(contact.id))}
-          aria-label={`Delete ${contact.name}`}
-        >
-          <MdDelete />
-        </button>
-      </li>
+    <div className={styles.container}>
+      <div className={styles.item}>
+        <FaUser className={styles.icon} />
+        <h3 className={styles.name}>{name}</h3>
+        <FaPhone className={styles.icon} />
+        <p className={styles.phone}>{number}</p>
+      </div>
+      <button className={styles.btn} onClick={handleDelete}>
+        <FaTrash className={styles.btnIcon} />
+        Delete
+      </button>
     </div>
   );
 };
